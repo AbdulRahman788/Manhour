@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Man Hours Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Proxima+Nova&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-shell">
+            <a href="#" class="nav-logo"
+                style="font-weight:700; font-size:1.2rem; color:var(--primary-color); text-decoration:none;">MAN HOURS</a>
+
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+
+            <div class="nav-menu">
+                <a href="admin.html" class="nav-item nav-link">Admin Dashboard</a>
+                <a href="manager.html" class="nav-item nav-link">Manager Dashboard</a>
+                <a href="summary.html" class="nav-item nav-link">Monthly Summary</a>
+                <a href="history.html" class="nav-item nav-link">History</a>
+
+                <div class="nav-actions">
+                    <button id="backBtn" class="nav-btn">BACK</button>
+                    <button id="logoutBtn" class="nav-btn">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-shell">
+    <div class="container" style="max-width: 900px;">
+        <header class="page-header">
+            <div class="page-header-copy">
+                <span class="eyebrow">Admin Workspace</span>
+                <h1>Keep the roster, imports, and reporting under control.</h1>
+                <p>Use this area to onboard employees, bring in month data, and jump into the views that matter most for payroll and project tracking.</p>
+            </div>
+            <div class="header-chip">
+                <strong>Operations Hub</strong>
+                <span>Manage people, imports, and exports from one screen.</span>
+            </div>
+        </header>
+
+        <div class="metric-row">
+            <div class="metric-card">
+                <strong>Employee Setup</strong>
+                <span>Add people one by one or through bulk uploads.</span>
+            </div>
+            <div class="metric-card">
+                <strong>Monthly Imports</strong>
+                <span>Bring in spreadsheets and normalize time records quickly.</span>
+            </div>
+            <div class="metric-card">
+                <strong>Reporting</strong>
+                <span>Move directly into summaries, history, and exports.</span>
+            </div>
+        </div>
+
+        <div class="page-section">
+        <div class="dashboard-grid">
+            <div class="dashboard-card" id="openAddEmployee">
+                <h3>+ Add Employee</h3>
+                <p>Register new staff members</p>
+            </div>
+
+            <a href="summary.html" class="dashboard-card">
+                <h3>Monthly Summary</h3>
+                <p>View hours overview</p>
+            </a>
+
+            <a href="manager.html" class="dashboard-card">
+                <h3>Manager Dashboard</h3>
+                <p>Log daily hours</p>
+            </a>
+
+            <div class="dashboard-card" id="uploadCSVSquare">
+                <h3>Upload CSV</h3>
+                <p>Bulk add employees</p>
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" />
+            </div>
+
+            <div class="dashboard-card" id="uploadExcelSquare">
+                <h3>Upload Monthly Data</h3>
+                <p>Import Excel Sheet</p>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" />
+            </div>
+
+            <div class="dashboard-card" id="downloadCSV">
+                <h3>Download CSV</h3>
+                <p>Export all data</p>
+            </div>
+
+            <a href="whatsapp_import.html" class="dashboard-card whatsapp-accent">
+                <h3>Import WhatsApp</h3>
+                <p>Paste Daily Report</p>
+            </a>
+        </div>
+        </div>
+
+        <section id="addEmployeeSection" class="page-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Add Employee</h2>
+                    <p class="section-subtitle">Create a clean roster entry with the details managers will use during daily logging.</p>
+                </div>
+            </div>
+            <form id="addEmployeeForm">
+                <div class="form-grid">
+                    <div>
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required />
+                    </div>
+
+                    <div>
+                        <label for="company">Company</label>
+                        <input type="text" id="company" name="company" required />
+                    </div>
+
+                    <div>
+                        <label for="role">Role</label>
+                        <input type="text" id="role" name="role" required />
+                    </div>
+
+                    <div>
+                        <label for="trade">Trade</label>
+                        <input type="text" id="trade" name="trade" required />
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="theme-btn">Add Employee</button>
+                    <button type="button" id="cancelAddEmployee" class="cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="employeeListSection" class="page-section" style="display:block; margin-top:2rem;">
+            <div class="section-heading">
+                <div>
+                    <h2 style="margin-bottom:0; color:var(--primary-color);">Current Employees</h2>
+                    <p class="section-subtitle">Review the existing roster before importing duplicate entries or assigning hours.</p>
+                </div>
+            </div>
+            <ul id="employeeList" style="list-style:none; padding:0;"></ul>
+        </section>
+    </div>
+    </main>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/admin.js?v=2"></script>
+</body>
+
+</html>

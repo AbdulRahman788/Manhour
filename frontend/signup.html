@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up - Man Hours Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+    <nav class="navbar auth-nav">
+        <div class="nav-shell">
+            <a href="login.html" class="nav-logo"
+                style="font-weight:700; font-size:1.2rem; color:var(--primary-color); text-decoration:none;">MAN HOURS</a>
+            <div class="auth-links">
+                <a href="login.html">Login</a>
+                <a href="signup.html">Create Account</a>
+            </div>
+        </div>
+    </nav>
+    <main class="auth-shell">
+        <div class="auth-layout">
+            <section class="auth-copy">
+                <span class="eyebrow">Admin Setup</span>
+                <h1>Create access for managers and administrators.</h1>
+                <p>Keep the crew roster and the people entering hours separate. Admin users can manage imports, employees, and account creation from a single workflow.</p>
+                <ul>
+                    <li>Create manager accounts for field supervisors.</li>
+                    <li>Reserve admin access for imports, exports, and setup.</li>
+                    <li>Use the same clean flow on desktop and mobile.</li>
+                </ul>
+            </section>
+
+            <section class="container card auth-card">
+                <span class="eyebrow">Access Control</span>
+                <h1>Sign Up</h1>
+                <p class="page-note">This page is intended for admins creating new internal accounts.</p>
+                <form id="signupForm">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required />
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required />
+
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="manager" style="color: black;">Manager</option>
+                        <option value="admin" style="color: black;">Admin</option>
+                    </select>
+
+                    <button type="submit">Create User</button>
+                </form>
+                <p id="msg" class="error"></p>
+            </section>
+        </div>
+    </main>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

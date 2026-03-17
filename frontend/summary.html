@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monthly Summary - Man Hours Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-shell">
+            <a href="#" class="nav-logo"
+                style="font-weight:700; font-size:1.2rem; color:var(--primary-color); text-decoration:none;">MAN HOURS</a>
+
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+
+            <div class="nav-menu">
+                <a href="admin.html" class="nav-item nav-link">Admin Dashboard</a>
+                <a href="manager.html" class="nav-item nav-link">Manager Dashboard</a>
+                <a href="summary.html" class="nav-item nav-link">Monthly Summary</a>
+                <a href="history.html" class="nav-item nav-link">History</a>
+
+                <div class="nav-actions">
+                    <button id="backBtn" class="nav-btn">BACK</button>
+                    <button id="logoutBtn" class="nav-btn">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="page-shell">
+    <div class="container wide-container card">
+        <header class="page-header">
+            <div class="page-header-copy">
+                <span class="eyebrow">Reporting</span>
+                <h1>Scan monthly hours at a glance.</h1>
+                <p>Switch between the summary and detailed views, search for specific people, and export the month without leaving the page.</p>
+            </div>
+            <div class="header-chip">
+                <strong>Monthly View</strong>
+                <span>Search, review, and export from one place.</span>
+            </div>
+        </header>
+
+        <section class="panel-card" style="display:block;">
+            <div class="section-heading">
+                <div>
+                    <h2>Filter and Export</h2>
+                    <p class="section-subtitle">Choose the month, narrow the list, and swap between rollup and detailed log views.</p>
+                </div>
+            </div>
+            <label for="monthSelect">Select Month</label>
+            <input type="month" id="monthSelect" />
+            <div class="stack-actions">
+                <div class="inline-actions">
+                    <button id="downloadCsvBtn" class="theme-btn" style="width: auto; margin-top: 0;">Download CSV</button>
+                    <button id="detailsBtn" class="theme-btn secondary-action" style="width: auto; margin-top: 0;">Show Details</button>
+                </div>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search Employee..." />
+            </div>
+        </section>
+
+        <div class="page-section table-wrap">
+        <table id="summaryTable" style="width:100%; margin-top:1rem; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.5rem;">Employee</th>
+                    <th style="text-align:left; padding:0.5rem;">Company</th>
+                    <th style="text-align:left; padding:0.5rem;">Role</th>
+                    <th style="text-align:left; padding:0.5rem;">Trade</th>
+                    <th style="text-align:left; padding:0.5rem;">Total Hours</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <table id="detailsTable" style="width:100%; margin-top:1rem; border-collapse:collapse; display:none;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.5rem;">Employee</th>
+                    <th style="text-align:left; padding:0.5rem;">Role</th>
+                    <th style="text-align:left; padding:0.5rem;">Trade</th>
+                    <th style="text-align:left; padding:0.5rem;">Date</th>
+                    <th style="text-align:left; padding:0.5rem;">Hours</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+        <!-- Employee Detail Modal -->
+        <div id="employeeModal" class="modal">
+            <div class="modal-content card">
+                <span class="close-btn">&times;</span>
+                <h2 id="modalEmpName">Employee Name</h2>
+                <div class="modal-info">
+                    <p><strong>Role:</strong> <span id="modalEmpRole"></span></p>
+                    <p><strong>Trade:</strong> <span id="modalEmpTrade"></span></p>
+                    <p><strong>Total Hours:</strong> <span id="modalEmpTotal"></span></p>
+                </div>
+
+                <div style="margin: 1.5rem 0;">
+                    <button id="exportIndividualBtn" class="theme-btn secondary-action" style="width: auto;">Export This Employee
+                        CSV</button>
+                </div>
+
+                <h3>Daily Breakdown</h3>
+                <table id="modalTable" style="width:100%; margin-top:1rem; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:0.5rem;">Date</th>
+                            <th style="text-align:left; padding:0.5rem;">Hours</th>
+                            <th style="text-align:left; padding:0.5rem;">Visual</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="msg" style="text-align:center; margin-top:1rem; color:#ff4d4d; font-weight: bold;"></div>
+
+        <script src="js/navbar.js"></script>
+        <script src="js/summary.js?v=2"></script>
+    </div>
+    </main>
+</body>
+
+</html>

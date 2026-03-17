@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import WhatsApp - Man Hours Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media(max-width: 768px) {
+            .split-view {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-shell">
+            <a href="#" class="nav-logo"
+                style="font-weight:700; font-size:1.2rem; color:var(--primary-color); text-decoration:none;">MAN HOURS</a>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <div class="nav-menu">
+                <a href="admin.html" class="nav-item nav-link">Admin Dashboard</a>
+                <a href="manager.html" class="nav-item nav-link">Manager Dashboard</a>
+                <a href="summary.html" class="nav-item nav-link">Monthly Summary</a>
+                <a href="history.html" class="nav-item nav-link">History</a>
+                <div class="nav-actions">
+                    <button id="backBtn" class="nav-btn">BACK</button>
+                    <button id="logoutBtn" class="nav-btn">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-shell">
+    <div class="container wide-container card">
+        <header class="page-header">
+            <div class="page-header-copy">
+                <span class="eyebrow">AI Intake</span>
+                <h1>Turn chat updates into structured work logs.</h1>
+                <p>Paste the raw WhatsApp report, review the extracted names and hours, and save the cleaned result into the same database used by the rest of the app.</p>
+            </div>
+            <div class="header-chip">
+                <strong>Import Assistant</strong>
+                <span>From unstructured message to saved daily entry.</span>
+            </div>
+        </header>
+
+        <div class="split-view">
+            <div class="whatsapp-panel">
+                <h3>1. Paste Message</h3>
+                <textarea id="whatsappText" placeholder="Paste message here... e.g.
+Date: 02-11-2026
+Site: Arthurkill
+Shoaib: 7:00 AM - 4:00 PM..."></textarea>
+                <button id="parseBtn" class="theme-btn">Analyze with AI</button>
+                <div id="loading" style="display:none; text-align:center; margin-top:1rem; color:var(--primary-color);">
+                    Processing... (This may take a few seconds)
+                </div>
+            </div>
+
+            <div>
+                <h3>2. Review & Save</h3>
+                <div id="resultArea" style="display:none;">
+                    <div class="info-panel">
+                        <p><strong>Date:</strong> <span id="parsedDate">-</span></p>
+                        <p><strong>Site:</strong> <span id="parsedSite">-</span></p>
+                    </div>
+
+                    <table id="previewTable" style="width:100%; margin-bottom:1rem; border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding:0.5rem;">Name</th>
+                                <th style="text-align:left; padding:0.5rem;">Hours</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <button id="saveBtn" class="theme-btn">
+                        Save to Database
+                    </button>
+                    <p id="saveMsg" style="text-align:center; margin-top:1rem;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/whatsapp.js"></script>
+</body>
+
+</html>
