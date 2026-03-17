@@ -8,18 +8,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Elements
     const addEmployeeSection = document.getElementById('addEmployeeSection');
-    const openAddEmployeeBtn = document.getElementById('openAddEmployee');
+    const openAddEmployeeButtons = document.querySelectorAll('.js-open-add-employee');
     const cancelAddEmployeeBtn = document.getElementById('cancelAddEmployee');
     const addForm = document.getElementById('addEmployeeForm');
     const employeeList = document.getElementById('employeeList');
+    const employeeCount = document.getElementById('employeeCount');
+    const employeeCountSecondary = document.getElementById('employeeCountSecondary');
     const logoutBtn = document.getElementById('logoutBtn');
     const downloadCSVBtn = document.getElementById('downloadCSV');
 
     // Toggle Add Employee Section
-    if (openAddEmployeeBtn) {
-        openAddEmployeeBtn.addEventListener('click', () => {
+    const openAddEmployeeSection = () => {
+        if (addEmployeeSection) {
             addEmployeeSection.classList.add('active');
             addEmployeeSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    if (openAddEmployeeButtons.length > 0) {
+        openAddEmployeeButtons.forEach(button => {
+            button.addEventListener('click', openAddEmployeeSection);
         });
     }
 
@@ -61,6 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const employees = await res.json();
             employeeList.innerHTML = '';
+            if (employeeCount) employeeCount.textContent = employees.length;
+            if (employeeCountSecondary) employeeCountSecondary.textContent = employees.length;
 
             if (employees.length === 0) {
                 employeeList.innerHTML = '<li class="empty-note">No employees found.</li>';
@@ -69,11 +79,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             employees.forEach(emp => {
                 const li = document.createElement('li');
-                li.textContent = `${emp.name} – ${emp.role} @ ${emp.company} (${emp.trade})`;
+                li.className = 'employee-list-item';
+                const main = document.createElement('div');
+                main.className = 'employee-list-main';
+
+                const name = document.createElement('span');
+                name.className = 'employee-list-name';
+                name.textContent = emp.name;
+
+                const meta = document.createElement('div');
+                meta.className = 'employee-list-meta';
+                meta.textContent = `${emp.role} at ${emp.company}`;
+
+                const trade = document.createElement('span');
+                trade.className = 'employee-list-pill';
+                trade.textContent = emp.trade;
+
+                main.appendChild(name);
+                main.appendChild(meta);
+                li.appendChild(main);
+                li.appendChild(trade);
                 employeeList.appendChild(li);
             });
         } catch (e) {
             console.error(e);
+            if (employeeCount) employeeCount.textContent = '0';
+            if (employeeCountSecondary) employeeCountSecondary.textContent = '0';
             employeeList.innerHTML = '<li class="error-note">Error loading employees.</li>';
         }
     };

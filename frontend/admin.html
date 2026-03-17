@@ -16,8 +16,13 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-shell">
-            <a href="#" class="nav-logo"
-                style="font-weight:700; font-size:1.2rem; color:var(--primary-color); text-decoration:none;">MAN HOURS</a>
+            <a href="admin.html" class="nav-logo">
+                <img src="assets/manhour-logo.svg" alt="Manhour logo" class="nav-logo-image" />
+                <span class="nav-logo-text">
+                    <strong>Manhour</strong>
+                    <span>Operations</span>
+                </span>
+            </a>
 
             <div class="hamburger">
                 <span class="bar"></span>
@@ -40,117 +45,150 @@
     </nav>
 
     <main class="page-shell">
-    <div class="container" style="max-width: 900px;">
-        <header class="page-header">
+    <div class="container admin-shell">
+        <header class="page-header admin-hero">
             <div class="page-header-copy">
                 <span class="eyebrow">Admin Workspace</span>
-                <h1>Keep the roster, imports, and reporting under control.</h1>
-                <p>Use this area to onboard employees, bring in month data, and jump into the views that matter most for payroll and project tracking.</p>
+                <h1>Manage roster, imports, and reports.</h1>
+                <div class="hero-actions">
+                    <button type="button" class="theme-btn hero-primary js-open-add-employee">Add Employee</button>
+                    <a href="summary.html" class="secondary-action hero-secondary">Monthly Summary</a>
+                </div>
             </div>
-            <div class="header-chip">
-                <strong>Operations Hub</strong>
-                <span>Manage people, imports, and exports from one screen.</span>
+            <div class="hero-status-card">
+                <strong>Roster</strong>
+                <div class="hero-status-grid">
+                    <div>
+                        <span class="hero-stat-label">Employees</span>
+                        <span class="hero-stat-value" id="employeeCount">0</span>
+                    </div>
+                    <div>
+                        <span class="hero-stat-label">Status</span>
+                        <span class="hero-stat-value hero-stat-text">Ready to import</span>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <div class="metric-row">
-            <div class="metric-card">
-                <strong>Employee Setup</strong>
-                <span>Add people one by one or through bulk uploads.</span>
-            </div>
-            <div class="metric-card">
-                <strong>Monthly Imports</strong>
-                <span>Bring in spreadsheets and normalize time records quickly.</span>
-            </div>
-            <div class="metric-card">
-                <strong>Reporting</strong>
-                <span>Move directly into summaries, history, and exports.</span>
-            </div>
-        </div>
-
-        <div class="page-section">
-        <div class="dashboard-grid">
-            <div class="dashboard-card" id="openAddEmployee">
-                <h3>+ Add Employee</h3>
-                <p>Register new staff members</p>
-            </div>
-
-            <a href="summary.html" class="dashboard-card">
-                <h3>Monthly Summary</h3>
-                <p>View hours overview</p>
-            </a>
-
-            <a href="manager.html" class="dashboard-card">
-                <h3>Manager Dashboard</h3>
-                <p>Log daily hours</p>
-            </a>
-
-            <div class="dashboard-card" id="uploadCSVSquare">
-                <h3>Upload CSV</h3>
-                <p>Bulk add employees</p>
-                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" />
-            </div>
-
-            <div class="dashboard-card" id="uploadExcelSquare">
-                <h3>Upload Monthly Data</h3>
-                <p>Import Excel Sheet</p>
-                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" />
-            </div>
-
-            <div class="dashboard-card" id="downloadCSV">
-                <h3>Download CSV</h3>
-                <p>Export all data</p>
-            </div>
-
-            <a href="whatsapp_import.html" class="dashboard-card whatsapp-accent">
-                <h3>Import WhatsApp</h3>
-                <p>Paste Daily Report</p>
-            </a>
-        </div>
-        </div>
-
-        <section id="addEmployeeSection" class="page-section">
-            <div class="section-heading">
-                <div>
-                    <h2>Add Employee</h2>
-                    <p class="section-subtitle">Create a clean roster entry with the details managers will use during daily logging.</p>
-                </div>
-            </div>
-            <form id="addEmployeeForm">
-                <div class="form-grid">
-                    <div>
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" required />
+        <section class="page-section admin-layout">
+            <div class="admin-main-column">
+                <section class="panel-card workflow-panel">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Quick Actions</h2>
+                        </div>
                     </div>
 
-                    <div>
-                        <label for="company">Company</label>
-                        <input type="text" id="company" name="company" required />
+                    <div class="dashboard-grid admin-action-grid">
+                        <div class="dashboard-card dashboard-card-featured js-open-add-employee">
+                            <span class="card-kicker">Primary</span>
+                            <h3>Add employee</h3>
+                            <p>Create a new roster entry.</p>
+                        </div>
+
+                        <div class="dashboard-card" id="uploadCSVSquare">
+                            <span class="card-kicker">Bulk</span>
+                            <h3>Import employee CSV</h3>
+                            <p>Upload multiple employees.</p>
+                            <input type="file" id="csvFileInput" accept=".csv" style="display: none;" />
+                        </div>
+
+                        <div class="dashboard-card" id="uploadExcelSquare">
+                            <span class="card-kicker">Import</span>
+                            <h3>Upload monthly logs</h3>
+                            <p>Import monthly hours.</p>
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" />
+                        </div>
+
+                        <a href="whatsapp_import.html" class="dashboard-card whatsapp-accent">
+                            <span class="card-kicker">Quick</span>
+                            <h3>WhatsApp import</h3>
+                            <p>Paste a daily report.</p>
+                        </a>
+                    </div>
+                </section>
+
+                <section id="addEmployeeSection" class="page-section collapsible-section panel-card admin-form-panel">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Add Employee</h2>
+                        </div>
+                    </div>
+                    <form id="addEmployeeForm">
+                        <div class="form-grid">
+                            <div>
+                                <label for="name">Full name</label>
+                                <input type="text" id="name" name="name" placeholder="e.g. John Smith" required />
+                            </div>
+
+                            <div>
+                                <label for="company">Company</label>
+                                <input type="text" id="company" name="company" placeholder="e.g. Apex Industrial" required />
+                            </div>
+
+                            <div>
+                                <label for="role">Role</label>
+                                <input type="text" id="role" name="role" placeholder="e.g. Site Supervisor" required />
+                            </div>
+
+                            <div>
+                                <label for="trade">Trade</label>
+                                <input type="text" id="trade" name="trade" placeholder="e.g. Electrical" required />
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="theme-btn">Save Employee</button>
+                            <button type="button" id="cancelAddEmployee" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <aside class="admin-side-column">
+                <section class="panel-card admin-side-panel">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Tools</h2>
+                        </div>
                     </div>
 
-                    <div>
-                        <label for="role">Role</label>
-                        <input type="text" id="role" name="role" required />
-                    </div>
+                    <div class="quick-link-stack">
+                        <a href="manager.html" class="dashboard-card quick-link-card">
+                            <span class="card-kicker">Daily</span>
+                            <h3>Manager</h3>
+                            <p>Log hours.</p>
+                        </a>
 
-                    <div>
-                        <label for="trade">Trade</label>
-                        <input type="text" id="trade" name="trade" required />
-                    </div>
-                </div>
+                        <a href="summary.html" class="dashboard-card quick-link-card">
+                            <span class="card-kicker">Report</span>
+                            <h3>Summary</h3>
+                            <p>View totals.</p>
+                        </a>
 
-                <div class="form-actions">
-                    <button type="submit" class="theme-btn">Add Employee</button>
-                    <button type="button" id="cancelAddEmployee" class="cancel-btn">Cancel</button>
-                </div>
-            </form>
+                        <a href="history.html" class="dashboard-card quick-link-card">
+                            <span class="card-kicker">History</span>
+                            <h3>History</h3>
+                            <p>Review past logs.</p>
+                        </a>
+
+                        <div class="dashboard-card quick-link-card" id="downloadCSV">
+                            <span class="card-kicker">Export</span>
+                            <h3>Download CSV</h3>
+                            <p>Export data.</p>
+                        </div>
+                    </div>
+                </section>
+            </aside>
         </section>
 
-        <section id="employeeListSection" class="page-section" style="display:block; margin-top:2rem;">
+        <section id="employeeListSection" class="page-section panel-card employee-roster-panel" style="display:block; margin-top:2rem;">
             <div class="section-heading">
                 <div>
                     <h2 style="margin-bottom:0; color:var(--primary-color);">Current Employees</h2>
-                    <p class="section-subtitle">Review the existing roster before importing duplicate entries or assigning hours.</p>
+                </div>
+                <div class="roster-meta">
+                    <span class="roster-count-pill"><strong id="employeeCountSecondary">0</strong> active employees</span>
                 </div>
             </div>
             <ul id="employeeList" style="list-style:none; padding:0;"></ul>
