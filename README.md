@@ -101,3 +101,4 @@ The Express server already serves the static frontend from the repository, so no
 - Render free services spin down after idle time, so the first request can be slow.
 - `backend/.env` should stay local only. Use `backend/.env.example` as the template.
 - If a real API key has ever been stored in `backend/.env`, rotate it before publishing the repo.
+# Manhour
