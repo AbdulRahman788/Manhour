@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Dashboard - Man Hours Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-shell">
+            <a href="employee-dashboard.html" class="nav-logo">
+                <img src="assets/manhour-logo.svg" alt="Manhour logo" class="nav-logo-image" />
+                <span class="nav-logo-text">
+                    <strong>Manhour</strong>
+                    <span>Employee</span>
+                </span>
+            </a>
+
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+
+            <div class="nav-menu">
+                <a href="employee-dashboard.html" class="nav-item nav-link">Dashboard</a>
+                <a href="employee-hours.html" class="nav-item nav-link">Hours Log</a>
+                <a href="employee-account.html" class="nav-item nav-link">Account</a>
+
+                <div class="nav-actions">
+                    <button id="backBtn" class="nav-btn">BACK</button>
+                    <button id="logoutBtn" class="nav-btn">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-shell">
+        <div class="container card employee-shell">
+            <header class="page-header">
+                <div class="page-header-copy">
+                    <span class="eyebrow">Employee Home</span>
+                    <h1 id="welcomeTitle">Your hours at a glance.</h1>
+                    <p id="dashboardSubtitle">Review your current month, recent entries, and account status in one place.</p>
+                </div>
+                <div class="hero-status-card">
+                    <strong>Current Month</strong>
+                    <div class="hero-status-grid">
+                        <div>
+                            <span class="hero-stat-label">Hours</span>
+                            <span class="hero-stat-value" id="monthHours">0.0</span>
+                        </div>
+                        <div>
+                            <span class="hero-stat-label">Entries</span>
+                            <span class="hero-stat-value" id="monthEntries">0</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="panel-card" style="display:block;">
+                <div class="dashboard-grid">
+                    <a href="employee-hours.html" class="dashboard-card">
+                        <span class="card-kicker">Records</span>
+                        <h3>Hours log</h3>
+                        <p>Save new hours and review your monthly history.</p>
+                    </a>
+
+                    <a href="employee-account.html" class="dashboard-card">
+                        <span class="card-kicker">Profile</span>
+                        <h3>Account</h3>
+                        <p>Update your profile and password.</p>
+                    </a>
+
+                    <div class="dashboard-card">
+                        <span class="card-kicker">Status</span>
+                        <h3 id="approvalBadge">Active</h3>
+                        <p id="statusCopy">Your employee portal is ready to use.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-card" style="display:block;">
+                <div class="section-heading">
+                    <div>
+                        <h2>Recent Entries</h2>
+                        <p class="section-subtitle">Your latest approved work log records.</p>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table id="recentHoursTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Hours</th>
+                                <th>Time Entry</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p id="dashboardMsg" class="error" style="display:none;"></p>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/employee-dashboard.js"></script>
+</body>
+
+</html>

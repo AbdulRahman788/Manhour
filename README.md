@@ -58,3 +58,46 @@ If the default admin user does not exist in your database yet, you can run the s
     node src/seedAdmin.js
     ```
 3.  You should see "Admin user created" (or "Admin user already exists").
+
+## Free Hosting
+
+This project is prepared for a free hobby deployment on Render with MongoDB Atlas.
+
+### Included deploy config
+
+The repo now includes:
+
+- `render.yaml` for a Render web service
+- `backend/.env.example` for local and hosted environment setup
+- a Node `20.x` engine pin in `backend/package.json`
+
+### Recommended stack
+
+- Render Free Web Service for the app
+- MongoDB Atlas Free Cluster for the database
+
+### Render setup
+
+1. Push this repo to GitHub.
+2. Create a free MongoDB Atlas cluster and get its connection string.
+3. In Render, create a new Blueprint deployment from this repo.
+4. Set these environment variables in Render:
+   - `MONGO_URI`
+   - `JWT_SECRET`
+   - `OPENAI_API_KEY` only if you want the AI import feature enabled
+5. Deploy.
+
+Render will run:
+
+```bash
+cd backend && npm install
+cd backend && npm start
+```
+
+The Express server already serves the static frontend from the repository, so no separate frontend host is required.
+
+### Important notes
+
+- Render free services spin down after idle time, so the first request can be slow.
+- `backend/.env` should stay local only. Use `backend/.env.example` as the template.
+- If a real API key has ever been stored in `backend/.env`, rotate it before publishing the repo.

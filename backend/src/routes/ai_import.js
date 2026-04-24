@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 const { OpenAI } = require('openai');
+const path = require('path');
+const { spawn } = require('child_process');
 const { authenticateToken } = require('../middleware/auth');
+
+function runPythonParser(message) {
+    return new Promise((resolve, reject) => {
+        const scriptPath = path.resolve(__dirname, '../utils/parse_whatsapp.py');
+        const pythonProcess = spawn('python3', [scriptPath], {
+            stdio: ['pipe', 'pipe', 'pipe']
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        pythonProcess.stdout.on('data', chunk => {
+            stdout += chunk.toString();
+        });
+
+        pythonProcess.stderr.on('data', chunk => {
+            stderr += chunk.toString();
+        });
+
+        pythonProcess.on('error', reject);
+
+        pythonProcess.on('close', code => {
+            if (code !== 0) {
+                reject(new Error(stderr.trim() || `Python parser exited with code ${code}`));
+                return;
+            }
+
+            try {
+                resolve(JSON.parse(stdout));
+            } catch (error) {
+                reject(error);
+            }
+        });
+
+        pythonProcess.stdin.write(JSON.stringify({ message }));
+        pythonProcess.stdin.end();
+    });
+}
 
 function getOpenAIClient() {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'YOUR_OPENAI_KEY_HERE') {
@@ -20,7 +60,12 @@ router.post('/parse', authenticateToken, async (req, res) => {
 
     const openai = getOpenAIClient();
     if (!openai) {
-        return res.status(503).json({ message: 'AI import is not configured on this server' });
+        try {
+            return res.json(await runPythonParser(message));
+        } catch (error) {
+            console.error('Python parser error:', error);
+            return res.status(500).json({ message: 'Unable to parse message' });
+        }
     }
 
     try {
@@ -62,10 +107,13 @@ router.post('/parse', authenticateToken, async (req, res) => {
 
     } catch (err) {
         console.error('OpenAI Error:', err);
-        res.status(500).json({
-            message: 'AI Parsing Failed',
-            error: err.message
-        });
+
+        try {
+            return res.json(await runPythonParser(message));
+        } catch (error) {
+            console.error('Python parser error:', error);
+            return res.status(500).json({ message: 'Unable to parse message' });
+        }
     }
 });
 

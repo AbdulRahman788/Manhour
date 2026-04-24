@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Employee = require('../models/Employee');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 function normalizeText(value) {
     return typeof value === 'string' ? value.trim() : '';
@@ -27,6 +28,10 @@ function isEmployeePayloadValid(employee) {
 async function findExistingEmployee(employee) {
     const employees = await Employee.find({}, 'name');
     return employees.find(existingEmployee => normalizeNameKey(existingEmployee.name) === normalizeNameKey(employee.name)) || null;
+}
+
+function isValidEmployeeId(id) {
+    return mongoose.Types.ObjectId.isValid(id);
 }
 
 // Get all employees needed by admin and manager workflows
@@ -101,6 +106,59 @@ router.post('/bulk', authenticateToken, authorizeRoles('admin'), async (req, res
 
         const result = await Employee.insertMany(employeesToInsert, { ordered: true });
         res.status(201).json(result);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+// Update employee (admin only)
+router.put('/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    const employeeId = req.params.id;
+    if (!isValidEmployeeId(employeeId)) {
+        return res.status(400).json({ message: 'Invalid employee id' });
+    }
+
+    const employeeData = buildEmployeePayload(req.body);
+    if (!isEmployeePayloadValid(employeeData)) {
+        return res.status(400).json({ message: 'All employee fields are required' });
+    }
+
+    try {
+        const existingByName = await findExistingEmployee(employeeData);
+        if (existingByName && existingByName._id.toString() !== employeeId) {
+            return res.status(409).json({ message: 'Another employee with this name already exists' });
+        }
+
+        const updatedEmployee = await Employee.findByIdAndUpdate(
+            employeeId,
+            employeeData,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedEmployee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        res.json(updatedEmployee);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+// Delete employee (admin only)
+router.delete('/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    const employeeId = req.params.id;
+    if (!isValidEmployeeId(employeeId)) {
+        return res.status(400).json({ message: 'Invalid employee id' });
+    }
+
+    try {
+        const deletedEmployee = await Employee.findByIdAndDelete(employeeId);
+        if (!deletedEmployee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        res.json({ message: 'Employee deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }

@@ -11,9 +11,17 @@ function authenticateToken(req, res, next) {
         if (err) return res.status(403).json({ message: 'Invalid token' });
         // Attach user info to request
         User.findById(payload.id)
+            .populate('employee', 'name company role trade')
             .then(user => {
                 if (!user) return res.status(404).json({ message: 'User not found' });
-                req.user = { id: user._id, role: user.role, email: user.email };
+                req.user = {
+                    id: user._id,
+                    role: user.role,
+                    email: user.email,
+                    approvalStatus: user.approvalStatus,
+                    employeeId: user.employee ? user.employee._id.toString() : null,
+                    employeeProfile: user.employee || user.employeeProfile || null
+                };
                 next();
             })
             .catch(err => res.status(500).json({ message: 'Server error', error: err.message }));

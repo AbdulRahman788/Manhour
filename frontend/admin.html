@@ -83,7 +83,7 @@
                         <div class="dashboard-card dashboard-card-featured js-open-add-employee">
                             <span class="card-kicker">Primary</span>
                             <h3>Add employee</h3>
-                            <p>Create a new roster entry.</p>
+                            <p>Create a roster entry employees can sign up against.</p>
                         </div>
 
                         <div class="dashboard-card" id="uploadCSVSquare">
@@ -100,21 +100,34 @@
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" />
                         </div>
 
+                        <div class="dashboard-card js-open-individual-bulk-hours">
+                            <span class="card-kicker">Hours</span>
+                            <h3>Bulk hours for one employee</h3>
+                            <p>Add the same hours across a date range.</p>
+                        </div>
+
                         <a href="whatsapp_import.html" class="dashboard-card whatsapp-accent">
                             <span class="card-kicker">Quick</span>
                             <h3>WhatsApp import</h3>
                             <p>Paste a daily report.</p>
                         </a>
+
+                        <div class="dashboard-card js-open-create-user">
+                            <span class="card-kicker">Access</span>
+                            <h3>Create internal user</h3>
+                            <p>Add a manager or another admin account.</p>
+                        </div>
                     </div>
                 </section>
 
                 <section id="addEmployeeSection" class="page-section collapsible-section panel-card admin-form-panel">
                     <div class="section-heading">
                         <div>
-                            <h2>Add Employee</h2>
+                            <h2 id="employeeFormTitle">Add Employee</h2>
                         </div>
                     </div>
                     <form id="addEmployeeForm">
+                        <input type="hidden" id="employeeId" name="employeeId" />
                         <div class="form-grid">
                             <div>
                                 <label for="name">Full name</label>
@@ -138,10 +151,87 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="theme-btn">Save Employee</button>
+                            <button type="submit" id="saveEmployeeBtn" class="theme-btn">Save Employee</button>
                             <button type="button" id="cancelAddEmployee" class="cancel-btn">Cancel</button>
                         </div>
                     </form>
+                    <p id="employeeFormMsg" class="page-note"></p>
+                </section>
+
+                <section id="createUserSection" class="page-section collapsible-section panel-card admin-form-panel">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Create Internal User</h2>
+                            <p class="section-subtitle">Use this form for manager and admin accounts only.</p>
+                        </div>
+                    </div>
+                    <form id="createUserForm">
+                        <div class="form-grid">
+                            <div>
+                                <label for="newUserEmail">Email</label>
+                                <input type="email" id="newUserEmail" name="email" required />
+                            </div>
+
+                            <div>
+                                <label for="newUserPassword">Password</label>
+                                <input type="password" id="newUserPassword" name="password" required />
+                            </div>
+
+                            <div>
+                                <label for="newUserRole">Role</label>
+                                <select id="newUserRole" name="role" required>
+                                    <option value="manager">Manager</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="theme-btn">Create User</button>
+                            <button type="button" id="cancelCreateUser" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                    <p id="createUserMsg" class="page-note"></p>
+                </section>
+
+                <section id="individualBulkHoursSection" class="page-section collapsible-section panel-card admin-form-panel">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Bulk Hours For Individual</h2>
+                            <p class="section-subtitle">Pick one employee, a date range, and the daily hours to add.</p>
+                        </div>
+                    </div>
+                    <form id="individualBulkHoursForm">
+                        <div class="form-grid">
+                            <div class="field-span-2">
+                                <label for="bulkHoursEmployeeId">Employee</label>
+                                <select id="bulkHoursEmployeeId" name="employeeId" required>
+                                    <option value="">Select an employee</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="bulkHoursStartDate">Start Date</label>
+                                <input type="date" id="bulkHoursStartDate" name="startDate" required />
+                            </div>
+
+                            <div>
+                                <label for="bulkHoursEndDate">End Date</label>
+                                <input type="date" id="bulkHoursEndDate" name="endDate" required />
+                            </div>
+
+                            <div>
+                                <label for="bulkHoursValue">Hours Per Day</label>
+                                <input type="number" id="bulkHoursValue" name="hours" min="0" max="24" step="0.1" placeholder="8" required />
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="theme-btn">Add Bulk Hours</button>
+                            <button type="button" id="cancelIndividualBulkHours" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                    <p id="individualBulkHoursMsg" class="page-note"></p>
                 </section>
             </div>
 
@@ -182,10 +272,24 @@
             </aside>
         </section>
 
+        <section class="page-section panel-card employee-roster-panel" style="display:block; margin-top:2rem;">
+            <div class="section-heading">
+                <div>
+                    <h2 style="margin-bottom:0; color:var(--primary-color);">Pending Employee Approvals</h2>
+                    <p class="section-subtitle">Review new employee signups before they can access the portal.</p>
+                </div>
+                <div class="roster-meta">
+                    <span class="roster-count-pill"><strong id="pendingApprovalCount">0</strong> pending</span>
+                </div>
+            </div>
+            <ul id="pendingEmployeeList" style="list-style:none; padding:0;"></ul>
+        </section>
+
         <section id="employeeListSection" class="page-section panel-card employee-roster-panel" style="display:block; margin-top:2rem;">
             <div class="section-heading">
                 <div>
                     <h2 style="margin-bottom:0; color:var(--primary-color);">Current Employees</h2>
+                    <p class="section-subtitle">These roster records are the source of truth for employee portal signup and profile details.</p>
                 </div>
                 <div class="roster-meta">
                     <span class="roster-count-pill"><strong id="employeeCountSecondary">0</strong> active employees</span>

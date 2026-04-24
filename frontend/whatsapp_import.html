@@ -7,20 +7,6 @@
     <title>Import WhatsApp - Man Hours Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/styles.css" />
-    <style>
-        .split-view {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        @media(max-width: 768px) {
-            .split-view {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -53,55 +39,90 @@
 
     <main class="page-shell">
     <div class="container wide-container card">
-        <header class="page-header">
+        <header class="page-header whatsapp-hero">
             <div class="page-header-copy">
                 <span class="eyebrow">AI Intake</span>
-                <h1>Turn chat updates into structured work logs.</h1>
-                <p>Paste the raw WhatsApp report, review the extracted names and hours, and save the cleaned result into the same database used by the rest of the app.</p>
+                <h1>Convert WhatsApp reports into work logs.</h1>
+                <p>Paste the message, review the extracted entries, and save.</p>
             </div>
-            <div class="header-chip">
-                <strong>Import Assistant</strong>
-                <span>From unstructured message to saved daily entry.</span>
+            <div class="whatsapp-step-strip">
+                <span class="whatsapp-step-pill">1. Paste</span>
+                <span class="whatsapp-step-pill">2. Review</span>
+                <span class="whatsapp-step-pill">3. Save</span>
             </div>
         </header>
 
-        <div class="split-view">
-            <div class="whatsapp-panel">
-                <h3>1. Paste Message</h3>
-                <textarea id="whatsappText" placeholder="Paste message here... e.g.
+        <div class="whatsapp-layout">
+            <section class="panel-card whatsapp-panel">
+                <div class="section-heading">
+                    <div>
+                        <h2>Paste Message</h2>
+                        <p class="section-subtitle">Drop in the raw field update exactly as it was sent.</p>
+                    </div>
+                </div>
+                <div class="whatsapp-helper">
+                    <strong>Expected format</strong>
+                    <span>Date, site, and worker lines with hours or time ranges.</span>
+                </div>
+                <textarea id="whatsappText" class="whatsapp-textarea" placeholder="Paste message here... e.g.
 Date: 02-11-2026
 Site: Arthurkill
 Shoaib: 7:00 AM - 4:00 PM..."></textarea>
-                <button id="parseBtn" class="theme-btn">Analyze with AI</button>
-                <div id="loading" style="display:none; text-align:center; margin-top:1rem; color:var(--primary-color);">
-                    Processing... (This may take a few seconds)
+                <div class="whatsapp-action-row">
+                    <button id="parseBtn" class="theme-btn">Extract Work Logs</button>
                 </div>
-            </div>
+                <div id="loading" class="loading-note" style="display:none;">
+                    Extracting entries...
+                </div>
+            </section>
 
-            <div>
-                <h3>2. Review & Save</h3>
-                <div id="resultArea" style="display:none;">
-                    <div class="info-panel">
-                        <p><strong>Date:</strong> <span id="parsedDate">-</span></p>
-                        <p><strong>Site:</strong> <span id="parsedSite">-</span></p>
+            <section class="panel-card whatsapp-review-panel">
+                <div class="section-heading">
+                    <div>
+                        <h2>Review & Save</h2>
+                        <p class="section-subtitle">Confirm the extracted date, site, and worker hours before saving.</p>
+                    </div>
+                </div>
+
+                <div id="resultArea" class="whatsapp-result-area" style="display:none;">
+                    <div class="whatsapp-summary-grid">
+                        <div class="whatsapp-summary-card">
+                            <span class="whatsapp-summary-label">Date</span>
+                            <strong id="parsedDate">-</strong>
+                        </div>
+                        <div class="whatsapp-summary-card">
+                            <span class="whatsapp-summary-label">Site</span>
+                            <strong id="parsedSite">-</strong>
+                        </div>
+                        <div class="whatsapp-summary-card">
+                            <span class="whatsapp-summary-label">Entries</span>
+                            <strong id="parsedCount">0</strong>
+                        </div>
                     </div>
 
-                    <table id="previewTable" style="width:100%; margin-bottom:1rem; border-collapse:collapse;">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left; padding:0.5rem;">Name</th>
-                                <th style="text-align:left; padding:0.5rem;">Hours</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="table-wrap whatsapp-preview-wrap">
+                        <table id="previewTable" class="whatsapp-preview-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
 
-                    <button id="saveBtn" class="theme-btn">
-                        Save to Database
-                    </button>
-                    <p id="saveMsg" style="text-align:center; margin-top:1rem;"></p>
+                    <div class="whatsapp-save-row">
+                        <button id="saveBtn" class="theme-btn">Save to Database</button>
+                    </div>
+                    <p id="saveMsg" class="page-note whatsapp-save-message"></p>
                 </div>
-            </div>
+
+                <div id="resultEmpty" class="whatsapp-empty-state">
+                    <strong>No parsed result yet</strong>
+                    <span>Run an extraction to review entries here before saving.</span>
+                </div>
+            </section>
         </div>
     </div>
     </main>

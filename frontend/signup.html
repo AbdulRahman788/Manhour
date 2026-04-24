@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign Up - Man Hours Tracker</title>
+    <title>Employee Portal Sign Up - Man Hours Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -28,34 +28,31 @@
     <main class="auth-shell">
         <div class="auth-layout">
             <section class="auth-copy">
-                <span class="eyebrow">Admin Setup</span>
-                <h1>Create access for managers and administrators.</h1>
-                <p>Keep the crew roster and the people entering hours separate. Admin users can manage imports, employees, and account creation from a single workflow.</p>
+                <span class="eyebrow">Employee Access</span>
+                <h1>Create your employee portal account.</h1>
+                <p>Use the same full name your admin added to the employee roster. If we verify it, your account is ready right away.</p>
                 <ul>
-                    <li>Create manager accounts for field supervisors.</li>
-                    <li>Reserve admin access for imports, exports, and setup.</li>
-                    <li>Use the same clean flow on desktop and mobile.</li>
+                    <li>Verify your name against the admin roster.</li>
+                    <li>Get instant access to your dashboard and hours log.</li>
+                    <li>See your profile details and keep your login secure.</li>
                 </ul>
             </section>
 
             <section class="container card auth-card">
-                <span class="eyebrow">Access Control</span>
+                <span class="eyebrow">Verified Sign Up</span>
                 <h1>Sign Up</h1>
-                <p class="page-note">This page is intended for admins creating new internal accounts.</p>
+                <p class="page-note">Only employees already added by admin can create an account here.</p>
                 <form id="signupForm">
+                    <label for="name">Full name</label>
+                    <input type="text" id="name" name="name" required />
+
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required />
 
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required />
 
-                    <label for="role">Role</label>
-                    <select id="role" name="role" required>
-                        <option value="manager" style="color: black;">Manager</option>
-                        <option value="admin" style="color: black;">Admin</option>
-                    </select>
-
-                    <button type="submit">Create User</button>
+                    <button type="submit">Request Access</button>
                 </form>
                 <p id="msg" class="error"></p>
             </section>

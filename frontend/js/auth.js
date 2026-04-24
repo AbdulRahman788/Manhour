@@ -1,9 +1,20 @@
-// auth.js – handles login and signup form submissions
+// auth.js – handles login and roster-verified employee signup
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Determine which form is present (login or signup)
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
+
+    const redirectByRole = role => {
+        if (role === 'admin') {
+            window.location.href = 'admin.html';
+            return;
+        }
+        if (role === 'manager') {
+            window.location.href = 'manager.html';
+            return;
+        }
+        window.location.href = 'employee-dashboard.html';
+    };
 
     if (loginForm) {
         loginForm.addEventListener('submit', async e => {
@@ -21,14 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('errorMsg').textContent = data.message || 'Login failed';
                     return;
                 }
-                // store token and role, then redirect based on role
+
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('role', data.role);
-                if (data.role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'manager.html';
-                }
+                redirectByRole(data.role);
             } catch (err) {
                 console.error(err);
                 document.getElementById('errorMsg').textContent = 'Network error';
@@ -39,32 +46,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (signupForm) {
         signupForm.addEventListener('submit', async e => {
             e.preventDefault();
-            const email = signupForm.email.value;
-            const password = signupForm.password.value;
-            const role = signupForm.role.value;
-            const token = localStorage.getItem('token');
             try {
                 const res = await fetch('/api/auth/register', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(token ? { Authorization: `Bearer ${token}` } : {})
-                    },
-                    body: JSON.stringify({ email, password, role })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: signupForm.name.value,
+                        email: signupForm.email.value,
+                        password: signupForm.password.value
+                    })
                 });
                 const data = await res.json();
                 if (!res.ok) {
-                    if (res.status === 401 || res.status === 403) {
-                        document.getElementById('msg').textContent = 'Only logged-in admins can create manager accounts.';
-                        return;
-                    }
+                    document.getElementById('msg').className = 'error';
                     document.getElementById('msg').textContent = data.message || 'Signup failed';
                     return;
                 }
-                document.getElementById('msg').textContent = 'Manager account created.';
+
+                document.getElementById('msg').className = 'success';
+                document.getElementById('msg').textContent = data.message || 'Your account is ready. You can log in now.';
                 signupForm.reset();
             } catch (err) {
                 console.error(err);
+                document.getElementById('msg').className = 'error';
                 document.getElementById('msg').textContent = 'Network error';
             }
         });

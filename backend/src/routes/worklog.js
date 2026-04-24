@@ -43,12 +43,76 @@ function normalizeHours(hours) {
     return Number(value.toFixed(2));
 }
 
+function parseTimeValue(value) {
+    if (typeof value !== 'string' || !/^\d{2}:\d{2}$/.test(value)) return null;
+
+    const [hours, minutes] = value.split(':').map(Number);
+    if (
+        !Number.isInteger(hours) ||
+        !Number.isInteger(minutes) ||
+        hours < 0 ||
+        hours > 23 ||
+        minutes < 0 ||
+        minutes > 59
+    ) {
+        return null;
+    }
+
+    return {
+        normalized: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
+        totalMinutes: (hours * 60) + minutes
+    };
+}
+
+function normalizeLunchBreakMinutes(value) {
+    if (value === undefined || value === null || value === '') return 0;
+
+    const minutes = Number(value);
+    if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return null;
+    return Math.round(minutes);
+}
+
+function deriveHoursFromTimeRange(startTime, endTime, lunchBreakMinutes) {
+    const start = parseTimeValue(startTime);
+    const end = parseTimeValue(endTime);
+    const lunchBreak = normalizeLunchBreakMinutes(lunchBreakMinutes);
+
+    if (!start || !end || lunchBreak === null) {
+        return null;
+    }
+
+    const workedMinutes = end.totalMinutes - start.totalMinutes - lunchBreak;
+    if (workedMinutes < 0) {
+        return null;
+    }
+
+    return {
+        startTime: start.normalized,
+        endTime: end.normalized,
+        lunchBreakMinutes: lunchBreak,
+        hours: Number((workedMinutes / 60).toFixed(2))
+    };
+}
+
 function normalizeEmployeeName(name) {
     return typeof name === 'string' ? name.trim() : '';
 }
 
 function normalizeEmployeeNameKey(name) {
     return normalizeEmployeeName(name).toLowerCase();
+}
+
+function requireApprovedEmployee(req, res) {
+    if (req.user.role !== 'employee') {
+        return null;
+    }
+
+    if (req.user.approvalStatus !== 'approved' || !req.user.employeeId) {
+        res.status(403).json({ message: 'Your employee account has not been approved yet' });
+        return false;
+    }
+
+    return true;
 }
 
 // Helper to check duplicate entry for same employee and date
@@ -62,12 +126,25 @@ async function isDuplicate(employeeId, date) {
 
 // Manager logs hours (manager role)
 router.post('/', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
-    const { employeeId, date, hours } = req.body;
+    const { employeeId, date, hours, startTime, endTime, lunchBreakMinutes } = req.body;
     const normalizedDate = parseWorkDate(date);
-    const normalizedHours = normalizeHours(hours);
+    const hasStartTime = startTime !== undefined && startTime !== null && startTime !== '';
+    const hasEndTime = endTime !== undefined && endTime !== null && endTime !== '';
+    const derivedTimeEntry = (hasStartTime || hasEndTime)
+        ? deriveHoursFromTimeRange(startTime, endTime, lunchBreakMinutes)
+        : null;
+    const normalizedHours = derivedTimeEntry ? derivedTimeEntry.hours : normalizeHours(hours);
+
+    if (hasStartTime !== hasEndTime) {
+        return res.status(400).json({ message: 'startTime and endTime must both be provided when using time entry' });
+    }
+
+    if ((hasStartTime || hasEndTime) && !derivedTimeEntry) {
+        return res.status(400).json({ message: 'Invalid time range or lunch break provided' });
+    }
 
     if (!employeeId || !normalizedDate || normalizedHours === null) {
-        return res.status(400).json({ message: 'employeeId, date and hours are required' });
+        return res.status(400).json({ message: 'employeeId, date, and either hours or a valid time range are required' });
     }
     if (!mongoose.Types.ObjectId.isValid(employeeId)) {
         return res.status(400).json({ message: 'Invalid employeeId' });
@@ -78,9 +155,63 @@ router.post('/', authenticateToken, authorizeRoles('admin', 'manager'), async (r
         if (await isDuplicate(employeeId, normalizedDate)) {
             return res.status(409).json({ message: 'Work log for this employee on this date already exists' });
         }
-        const workLog = new WorkLog({ employee: employeeId, date: normalizedDate, hours: normalizedHours });
+        const workLog = new WorkLog({
+            employee: employeeId,
+            date: normalizedDate,
+            hours: normalizedHours,
+            startTime: derivedTimeEntry ? derivedTimeEntry.startTime : undefined,
+            endTime: derivedTimeEntry ? derivedTimeEntry.endTime : undefined,
+            lunchBreakMinutes: derivedTimeEntry ? derivedTimeEntry.lunchBreakMinutes : 0
+        });
         await workLog.save();
         res.status(201).json(workLog);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+router.post('/mine', authenticateToken, authorizeRoles('employee'), async (req, res) => {
+    const approvedEmployee = requireApprovedEmployee(req, res);
+    if (approvedEmployee === false) return;
+
+    const { date, hours, startTime, endTime, lunchBreakMinutes } = req.body;
+    const normalizedDate = parseWorkDate(date);
+    const hasStartTime = startTime !== undefined && startTime !== null && startTime !== '';
+    const hasEndTime = endTime !== undefined && endTime !== null && endTime !== '';
+    const derivedTimeEntry = (hasStartTime || hasEndTime)
+        ? deriveHoursFromTimeRange(startTime, endTime, lunchBreakMinutes)
+        : null;
+    const normalizedHours = derivedTimeEntry ? derivedTimeEntry.hours : normalizeHours(hours);
+
+    if (hasStartTime !== hasEndTime) {
+        return res.status(400).json({ message: 'startTime and endTime must both be provided when using time entry' });
+    }
+
+    if ((hasStartTime || hasEndTime) && !derivedTimeEntry) {
+        return res.status(400).json({ message: 'Invalid time range or lunch break provided' });
+    }
+
+    if (!normalizedDate || normalizedHours === null) {
+        return res.status(400).json({ message: 'date and either hours or a valid time range are required' });
+    }
+
+    try {
+        if (await isDuplicate(req.user.employeeId, normalizedDate)) {
+            return res.status(409).json({ message: 'You already logged hours for this date' });
+        }
+
+        const workLog = new WorkLog({
+            employee: req.user.employeeId,
+            date: normalizedDate,
+            hours: normalizedHours,
+            startTime: derivedTimeEntry ? derivedTimeEntry.startTime : undefined,
+            endTime: derivedTimeEntry ? derivedTimeEntry.endTime : undefined,
+            lunchBreakMinutes: derivedTimeEntry ? derivedTimeEntry.lunchBreakMinutes : 0
+        });
+        await workLog.save();
+
+        const populatedLog = await WorkLog.findById(workLog._id).populate('employee', 'name company role trade');
+        res.status(201).json(populatedLog);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
@@ -93,7 +224,39 @@ router.get('/', authenticateToken, async (req, res) => {
     if (!range) return res.status(400).json({ message: 'Month query parameter must use YYYY-MM' });
 
     try {
-        const logs = await WorkLog.find({ date: { $gte: range.start, $lt: range.end } })
+        const approvedEmployee = requireApprovedEmployee(req, res);
+        if (approvedEmployee === false) return;
+
+        const query = { date: { $gte: range.start, $lt: range.end } };
+        if (req.user.role === 'employee') {
+            query.employee = req.user.employeeId;
+        }
+
+        const logs = await WorkLog.find(query)
+            .populate('employee', 'name company role trade');
+        res.json(logs);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+router.get('/mine', authenticateToken, authorizeRoles('employee'), async (req, res) => {
+    const approvedEmployee = requireApprovedEmployee(req, res);
+    if (approvedEmployee === false) return;
+
+    const query = { employee: req.user.employeeId };
+    const range = req.query.month ? parseMonthRange(req.query.month) : null;
+
+    if (req.query.month && !range) {
+        return res.status(400).json({ message: 'Month query parameter must use YYYY-MM' });
+    }
+    if (range) {
+        query.date = { $gte: range.start, $lt: range.end };
+    }
+
+    try {
+        const logs = await WorkLog.find(query)
+            .sort({ date: -1 })
             .populate('employee', 'name company role trade');
         res.json(logs);
     } catch (err) {
@@ -175,6 +338,92 @@ router.get('/all', authenticateToken, authorizeRoles('admin', 'manager'), async 
     }
 });
 
+// Update a work log (admin & manager)
+router.put('/:id', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
+    const workLogId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(workLogId)) {
+        return res.status(400).json({ message: 'Invalid work log id' });
+    }
+
+    const { employeeId, date, hours, startTime, endTime, lunchBreakMinutes } = req.body;
+    const hasStartTime = startTime !== undefined && startTime !== null && startTime !== '';
+    const hasEndTime = endTime !== undefined && endTime !== null && endTime !== '';
+    const derivedTimeEntry = (hasStartTime || hasEndTime)
+        ? deriveHoursFromTimeRange(startTime, endTime, lunchBreakMinutes)
+        : null;
+    const normalizedHours = derivedTimeEntry ? derivedTimeEntry.hours : normalizeHours(hours);
+    const normalizedDate = date === undefined ? null : parseWorkDate(date);
+
+    if (hasStartTime !== hasEndTime) {
+        return res.status(400).json({ message: 'startTime and endTime must both be provided when using time entry' });
+    }
+
+    if ((hasStartTime || hasEndTime) && !derivedTimeEntry) {
+        return res.status(400).json({ message: 'Invalid time range or lunch break provided' });
+    }
+
+    if (hours !== undefined && normalizedHours === null) {
+        return res.status(400).json({ message: 'Invalid hours provided' });
+    }
+
+    if (date !== undefined && !normalizedDate) {
+        return res.status(400).json({ message: 'Invalid date provided' });
+    }
+
+    if (employeeId !== undefined && !mongoose.Types.ObjectId.isValid(employeeId)) {
+        return res.status(400).json({ message: 'Invalid employeeId' });
+    }
+
+    try {
+        const existingLog = await WorkLog.findById(workLogId);
+        if (!existingLog) {
+            return res.status(404).json({ message: 'Work log not found' });
+        }
+
+        const nextEmployeeId = employeeId || existingLog.employee.toString();
+        const nextDate = normalizedDate || existingLog.date;
+
+        if (employeeId) {
+            const employee = await Employee.findById(employeeId);
+            if (!employee) return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        const duplicate = await WorkLog.findOne({
+            _id: { $ne: workLogId },
+            employee: nextEmployeeId,
+            date: {
+                $gte: nextDate,
+                $lt: new Date(nextDate.getTime() + (24 * 60 * 60 * 1000))
+            }
+        });
+
+        if (duplicate) {
+            return res.status(409).json({ message: 'Another work log for this employee on this date already exists' });
+        }
+
+        existingLog.employee = nextEmployeeId;
+        existingLog.date = nextDate;
+
+        if (derivedTimeEntry) {
+            existingLog.hours = derivedTimeEntry.hours;
+            existingLog.startTime = derivedTimeEntry.startTime;
+            existingLog.endTime = derivedTimeEntry.endTime;
+            existingLog.lunchBreakMinutes = derivedTimeEntry.lunchBreakMinutes;
+        } else if (hours !== undefined) {
+            existingLog.hours = normalizedHours;
+            existingLog.startTime = undefined;
+            existingLog.endTime = undefined;
+            existingLog.lunchBreakMinutes = 0;
+        }
+
+        await existingLog.save();
+        const populatedLog = await WorkLog.findById(existingLog._id).populate('employee', 'name company role trade');
+        res.json(populatedLog);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
 // Export all work logs as CSV (admin & manager)
 router.get('/export/all', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
     try {
@@ -224,14 +473,16 @@ router.post('/bulk', authenticateToken, authorizeRoles('admin', 'manager'), asyn
             empMap.set(key, employee._id);
         });
 
-        if (ambiguousNames.size > 0) {
+        // Cache employees to minimize DB lookups
+        const logsWithoutEmployeeId = logs.filter(log => !log.employeeId);
+        const uniqueNames = [...new Set(logsWithoutEmployeeId.map(l => normalizeEmployeeName(l.name)).filter(Boolean))];
+
+        const ambiguousNamesInPayload = uniqueNames.filter(name => ambiguousNames.has(normalizeEmployeeNameKey(name)));
+        if (ambiguousNamesInPayload.length > 0) {
             return res.status(409).json({
-                message: 'Bulk import is blocked because multiple employees share the same name. Resolve duplicate employee names first.'
+                message: 'Bulk import is blocked because multiple employees share the same name. Use an exact employee record instead.'
             });
         }
-
-        // Cache employees to minimize DB lookups
-        const uniqueNames = [...new Set(logs.map(l => normalizeEmployeeName(l.name)).filter(Boolean))];
 
         // Identify missing employees and create them
         const missingNames = uniqueNames.filter(name => !empMap.has(normalizeEmployeeNameKey(name)));
@@ -270,7 +521,20 @@ router.post('/bulk', authenticateToken, authorizeRoles('admin', 'manager'), asyn
 
         for (const log of logs) {
             const employeeName = normalizeEmployeeName(log.name);
-            const empId = empMap.get(normalizeEmployeeNameKey(employeeName));
+            let empId = null;
+
+            if (log.employeeId) {
+                if (!mongoose.Types.ObjectId.isValid(log.employeeId)) {
+                    results.failed++;
+                    results.errors.push(`Invalid employeeId for ${employeeName || 'Unknown employee'}`);
+                    continue;
+                }
+
+                empId = log.employeeId;
+            } else {
+                empId = empMap.get(normalizeEmployeeNameKey(employeeName));
+            }
+
             if (!empId) {
                 // Should not happen if creation worked, but safety check
                 results.failed++;

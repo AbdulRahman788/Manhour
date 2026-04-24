@@ -2,9 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const parseBtn = document.getElementById('parseBtn');
     const textArea = document.getElementById('whatsappText');
     const resultArea = document.getElementById('resultArea');
+    const resultEmpty = document.getElementById('resultEmpty');
     const loading = document.getElementById('loading');
     const previewTableBody = document.querySelector('#previewTable tbody');
     const saveMsg = document.getElementById('saveMsg');
+    const parsedDate = document.getElementById('parsedDate');
+    const parsedSite = document.getElementById('parsedSite');
+    const parsedCount = document.getElementById('parsedCount');
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -15,13 +19,41 @@ document.addEventListener('DOMContentLoaded', () => {
     // Store parsed data to send to backend later
     let currentParsedData = [];
 
+    const setStatusMessage = (message, tone = 'muted') => {
+        saveMsg.textContent = message;
+        if (tone === 'success') {
+            saveMsg.style.color = 'var(--success-color)';
+        } else if (tone === 'error') {
+            saveMsg.style.color = 'var(--danger-color)';
+        } else {
+            saveMsg.style.color = 'var(--text-muted)';
+        }
+    };
+
+    const showEmptyState = () => {
+        resultArea.style.display = 'none';
+        if (resultEmpty) resultEmpty.style.display = 'grid';
+    };
+
+    const showResultState = () => {
+        resultArea.style.display = 'grid';
+        if (resultEmpty) resultEmpty.style.display = 'none';
+    };
+
+    showEmptyState();
+
     parseBtn.addEventListener('click', async () => {
         const text = textArea.value.trim();
-        if (!text) return alert("Please paste a message first!");
+        if (!text) {
+            setStatusMessage('Paste a WhatsApp report before extracting.', 'error');
+            return;
+        }
 
+        setStatusMessage('');
         loading.style.display = 'block';
-        resultArea.style.display = 'none';
+        showEmptyState();
         parseBtn.disabled = true;
+        parseBtn.textContent = 'Extracting...';
 
         try {
             const res = await fetch('/api/ai/parse', {
@@ -37,33 +69,47 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) throw new Error(data.message || 'AI Parse Failed');
 
             // Render Results
-            document.getElementById('parsedDate').textContent = data.date || 'Unknown';
-            document.getElementById('parsedSite').textContent = data.site || 'Unknown';
+            parsedDate.textContent = data.date || 'Unknown';
+            parsedSite.textContent = data.site || 'Unknown';
 
             previewTableBody.innerHTML = '';
             currentParsedData = data.workers || [];
+            parsedCount.textContent = currentParsedData.length;
 
             if (currentParsedData.length === 0) {
-                previewTableBody.innerHTML = '<tr><td colspan="2">No workers found. Try again?</td></tr>';
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 2;
+                td.textContent = 'No workers found. Adjust the message and try again.';
+                tr.appendChild(td);
+                previewTableBody.appendChild(tr);
+                setStatusMessage('No worker entries were detected.', 'error');
             } else {
                 currentParsedData.forEach(worker => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${worker.name}</td>
-                        <td>${worker.hours}</td>
-                    `;
+                    const nameCell = document.createElement('td');
+                    const hoursCell = document.createElement('td');
+
+                    nameCell.textContent = worker.name;
+                    hoursCell.textContent = worker.hours;
+
+                    tr.appendChild(nameCell);
+                    tr.appendChild(hoursCell);
                     previewTableBody.appendChild(tr);
                 });
+                setStatusMessage(`Ready to save ${currentParsedData.length} extracted entr${currentParsedData.length === 1 ? 'y' : 'ies'}.`);
             }
 
-            resultArea.style.display = 'block';
+            showResultState();
 
         } catch (err) {
             console.error(err);
-            alert("Error: " + err.message);
+            setStatusMessage(`Error: ${err.message}`, 'error');
+            showEmptyState();
         } finally {
             loading.style.display = 'none';
             parseBtn.disabled = false;
+            parseBtn.textContent = 'Extract Work Logs';
         }
     });
 
@@ -92,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             finalSaveBtn.disabled = true;
             finalSaveBtn.textContent = "Saving...";
+            setStatusMessage('Saving extracted entries...');
 
             const res = await fetch('/api/worklogs/bulk', {
                 method: 'POST',
@@ -104,14 +151,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await res.json();
             if (res.ok) {
-                saveMsg.style.color = '#00e676';
-                saveMsg.textContent = `Success! Saved ${result.success} logs.`;
+                setStatusMessage(`Saved ${result.success} logs successfully.`, 'success');
             } else {
                 throw new Error(result.message);
             }
         } catch (e) {
-            saveMsg.style.color = 'red';
-            saveMsg.textContent = "Error saving: " + e.message;
+            setStatusMessage(`Error saving: ${e.message}`, 'error');
         } finally {
             finalSaveBtn.disabled = false;
             finalSaveBtn.textContent = "Save to Database";

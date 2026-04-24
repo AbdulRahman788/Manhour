@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Hours Log - Man Hours Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-shell">
+            <a href="employee-dashboard.html" class="nav-logo">
+                <img src="assets/manhour-logo.svg" alt="Manhour logo" class="nav-logo-image" />
+                <span class="nav-logo-text">
+                    <strong>Manhour</strong>
+                    <span>Employee</span>
+                </span>
+            </a>
+
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+
+            <div class="nav-menu">
+                <a href="employee-dashboard.html" class="nav-item nav-link">Dashboard</a>
+                <a href="employee-hours.html" class="nav-item nav-link">Hours Log</a>
+                <a href="employee-account.html" class="nav-item nav-link">Account</a>
+
+                <div class="nav-actions">
+                    <button id="backBtn" class="nav-btn">BACK</button>
+                    <button id="logoutBtn" class="nav-btn">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-shell">
+        <div class="container wide-container card">
+            <header class="page-header">
+                <div class="page-header-copy">
+                    <span class="eyebrow">Hours Log</span>
+                    <h1>Log and review your own hours.</h1>
+                    <p>Save today’s work quickly, then filter by month to review your recorded shifts.</p>
+                </div>
+                <div class="header-chip">
+                    <strong>Self Service</strong>
+                    <span>Your entries save directly to your employee record.</span>
+                </div>
+            </header>
+
+            <section class="panel-card" style="display:block;">
+                <form id="employeeLogForm">
+                    <div class="form-grid">
+                        <div>
+                            <label for="logDate">Date</label>
+                            <input type="date" id="logDate" name="date" required />
+                        </div>
+                        <div>
+                            <label for="hoursInput">Hours</label>
+                            <input type="number" id="hoursInput" name="hours" min="0" max="24" step="0.25" placeholder="8" />
+                        </div>
+                        <div>
+                            <label for="startTime">Start time</label>
+                            <input type="time" id="startTime" name="startTime" />
+                        </div>
+                        <div>
+                            <label for="endTime">End time</label>
+                            <input type="time" id="endTime" name="endTime" />
+                        </div>
+                        <div>
+                            <label for="lunchBreakMinutes">Lunch break (minutes)</label>
+                            <input type="number" id="lunchBreakMinutes" name="lunchBreakMinutes" min="0" max="180" step="5" placeholder="30" />
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="theme-btn">Save Hours</button>
+                    </div>
+                </form>
+                <p id="hoursMsg" class="error" style="display:none;"></p>
+                <p class="page-note">Use either total hours or a start/end time range. If you use times, hours are calculated automatically.</p>
+            </section>
+
+            <section class="panel-card" style="display:block;">
+                <label for="monthSelect">Select Month</label>
+                <input type="month" id="monthSelect" />
+                <p id="hoursSummary" class="page-note">0 entries</p>
+            </section>
+
+            <div class="table-wrap">
+                <table id="employeeHoursTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Hours</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Lunch Break</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/employee-hours.js"></script>
+</body>
+
+</html>
