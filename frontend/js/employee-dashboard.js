@@ -56,15 +56,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         logs.slice(0, 6).forEach(entry => {
             const row = document.createElement('tr');
             const date = new Date(entry.date).toISOString().split('T')[0];
-            const timeEntry = entry.startTime && entry.endTime
-                ? `${entry.startTime} - ${entry.endTime}`
-                : 'Manual hours';
-            row.innerHTML = `<td>${date}</td><td>${Number(entry.hours).toFixed(1)}</td><td>${timeEntry}</td>`;
+            row.innerHTML = `<td>${date}</td><td>${Number(entry.hours).toFixed(1)}</td><td>${entry.startTime || '-'}</td><td>${entry.endTime || '-'}</td>`;
             recentHoursTableBody.appendChild(row);
         });
 
         if (logs.length === 0) {
-            recentHoursTableBody.innerHTML = '<tr><td colspan="3">No hours have been logged for you yet.</td></tr>';
+            recentHoursTableBody.innerHTML = '<tr><td colspan="4">No hours have been logged for you yet.</td></tr>';
         }
     } catch (error) {
         console.error(error);

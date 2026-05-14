@@ -64,14 +64,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 hoursCell.textContent = entry.hours;
                 tr.appendChild(hoursCell);
 
-                const timeEntryCell = document.createElement('td');
-                if (entry.startTime && entry.endTime) {
-                    const lunchBreak = entry.lunchBreakMinutes ? `, break ${entry.lunchBreakMinutes}m` : '';
-                    timeEntryCell.textContent = `${entry.startTime} - ${entry.endTime}${lunchBreak}`;
-                } else {
-                    timeEntryCell.textContent = 'Manual hours';
-                }
-                tr.appendChild(timeEntryCell);
+                const timeInCell = document.createElement('td');
+                timeInCell.textContent = entry.startTime || '-';
+                tr.appendChild(timeInCell);
+
+                const timeOutCell = document.createElement('td');
+                timeOutCell.textContent = entry.endTime || '-';
+                tr.appendChild(timeOutCell);
+
+                const breakCell = document.createElement('td');
+                breakCell.textContent = entry.startTime && entry.endTime
+                    ? `${entry.lunchBreakMinutes || 0} min`
+                    : '-';
+                tr.appendChild(breakCell);
 
                 const actionsCell = document.createElement('td');
                 actionsCell.className = 'table-actions';
@@ -83,6 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 hoursInput.step = '0.1';
                 hoursInput.value = entry.hours;
                 hoursInput.className = 'table-inline-input';
+                hoursInput.title = 'Hours';
+
+                const timeInInput = document.createElement('input');
+                timeInInput.type = 'time';
+                timeInInput.value = entry.startTime || '';
+                timeInInput.className = 'table-inline-input';
+                timeInInput.title = 'Time In';
+
+                const timeOutInput = document.createElement('input');
+                timeOutInput.type = 'time';
+                timeOutInput.value = entry.endTime || '';
+                timeOutInput.className = 'table-inline-input';
+                timeOutInput.title = 'Time Out';
 
                 const saveBtn = document.createElement('button');
                 saveBtn.type = 'button';
@@ -91,13 +109,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveBtn.addEventListener('click', async () => {
                     saveBtn.disabled = true;
                     try {
+                        const payload = {};
+                        const nextTimeIn = timeInInput.value;
+                        const nextTimeOut = timeOutInput.value;
+
+                        if (nextTimeIn || nextTimeOut) {
+                            if (!nextTimeIn || !nextTimeOut) {
+                                throw new Error('Enter both Time In and Time Out to save a time entry.');
+                            }
+
+                            payload.startTime = nextTimeIn;
+                            payload.endTime = nextTimeOut;
+                            payload.lunchBreakMinutes = Number(entry.lunchBreakMinutes || 0);
+                        } else {
+                            const nextHours = Number(hoursInput.value);
+                            if (!Number.isFinite(nextHours) || nextHours < 0 || nextHours > 24) {
+                                throw new Error('Enter valid hours between 0 and 24.');
+                            }
+                            payload.hours = nextHours;
+                        }
+
                         const resUpdate = await fetch(`/api/worklogs/${entry._id}`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
                                 Authorization: `Bearer ${token}`
                             },
-                            body: JSON.stringify({ hours: Number(hoursInput.value) })
+                            body: JSON.stringify(payload)
                         });
 
                         const result = await resUpdate.json();
@@ -116,6 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 actionsCell.appendChild(hoursInput);
+                actionsCell.appendChild(timeInInput);
+                actionsCell.appendChild(timeOutInput);
                 actionsCell.appendChild(saveBtn);
                 tr.appendChild(actionsCell);
                 historyTableBody.appendChild(tr);

@@ -68,14 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return totals;
     };
 
-    const updateWorkLogHours = async (workLogId, hours) => {
+    const updateWorkLog = async (workLogId, payload) => {
         const response = await fetch(`/api/worklogs/${workLogId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ hours: Number(hours) })
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
@@ -86,19 +86,34 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     };
 
-    const handleSaveHours = async (workLogId, hoursInput) => {
+    const handleSaveWorkLog = async (entry, hoursInput, timeInInput, timeOutInput) => {
         try {
-            const nextHours = Number(hoursInput.value);
-            if (!Number.isFinite(nextHours) || nextHours < 0 || nextHours > 24) {
-                throw new Error('Enter valid hours between 0 and 24.');
+            const payload = {};
+            const nextTimeIn = timeInInput.value;
+            const nextTimeOut = timeOutInput.value;
+
+            if (nextTimeIn || nextTimeOut) {
+                if (!nextTimeIn || !nextTimeOut) {
+                    throw new Error('Enter both Time In and Time Out to save a time entry.');
+                }
+
+                payload.startTime = nextTimeIn;
+                payload.endTime = nextTimeOut;
+                payload.lunchBreakMinutes = Number(entry.lunchBreakMinutes || 0);
+            } else {
+                const nextHours = Number(hoursInput.value);
+                if (!Number.isFinite(nextHours) || nextHours < 0 || nextHours > 24) {
+                    throw new Error('Enter valid hours between 0 and 24.');
+                }
+                payload.hours = nextHours;
             }
 
-            await updateWorkLogHours(workLogId, nextHours);
-            setMessage('Monthly hours updated successfully.', 'success');
+            await updateWorkLog(entry._id, payload);
+            setMessage('Monthly work log updated successfully.', 'success');
             await fetchSummary(monthInput.value);
         } catch (error) {
             console.error(error);
-            setMessage(error.message || 'Failed to update hours');
+            setMessage(error.message || 'Failed to update work log');
         }
     };
 
@@ -113,6 +128,19 @@ document.addEventListener('DOMContentLoaded', () => {
         hoursInput.step = '0.1';
         hoursInput.value = Number(entry.hours).toFixed(1);
         hoursInput.className = 'table-inline-input';
+        hoursInput.title = 'Hours';
+
+        const timeInInput = document.createElement('input');
+        timeInInput.type = 'time';
+        timeInInput.value = entry.startTime || '';
+        timeInInput.className = 'table-inline-input';
+        timeInInput.title = 'Time In';
+
+        const timeOutInput = document.createElement('input');
+        timeOutInput.type = 'time';
+        timeOutInput.value = entry.endTime || '';
+        timeOutInput.className = 'table-inline-input';
+        timeOutInput.title = 'Time Out';
 
         const saveBtn = document.createElement('button');
         saveBtn.type = 'button';
@@ -121,13 +149,15 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn.addEventListener('click', async () => {
             saveBtn.disabled = true;
             try {
-                await handleSaveHours(entry._id, hoursInput);
+                await handleSaveWorkLog(entry, hoursInput, timeInInput, timeOutInput);
             } finally {
                 saveBtn.disabled = false;
             }
         });
 
         wrapper.appendChild(hoursInput);
+        wrapper.appendChild(timeInInput);
+        wrapper.appendChild(timeOutInput);
         wrapper.appendChild(saveBtn);
         return wrapper;
     };
@@ -195,6 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 hoursCell.textContent = Number(entry.hours).toFixed(1);
                 tr.appendChild(hoursCell);
 
+                const timeInCell = document.createElement('td');
+                timeInCell.textContent = entry.startTime || '-';
+                tr.appendChild(timeInCell);
+
+                const timeOutCell = document.createElement('td');
+                timeOutCell.textContent = entry.endTime || '-';
+                tr.appendChild(timeOutCell);
+
                 const actionsCell = document.createElement('td');
                 actionsCell.appendChild(buildHoursEditor(entry));
                 tr.appendChild(actionsCell);
@@ -224,6 +262,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const hoursCell = document.createElement('td');
                 hoursCell.textContent = Number(log.hours).toFixed(1);
                 tr.appendChild(hoursCell);
+
+                const timeInCell = document.createElement('td');
+                timeInCell.textContent = log.startTime || '-';
+                tr.appendChild(timeInCell);
+
+                const timeOutCell = document.createElement('td');
+                timeOutCell.textContent = log.endTime || '-';
+                tr.appendChild(timeOutCell);
 
                 const visualCell = document.createElement('td');
                 const bar = document.createElement('div');
